@@ -53,3 +53,10 @@ output.txt
 test.txt
 test_folder/
 project-test/
+deploy-*.txt
+env-list.txt
+git-*.txt
+npm-*.txt
+vercel-*.txt
+push-*.txt
+tmp-*.txt
