@@ -1,16 +1,22 @@
 /**
- * POST /api/ai/explain
+ * POST /api/ai/correct
  *
- * Génère une explication IA pour un document (sujet ou corrigé).
- * Utilise Groq (Llama 3.3 open-source) — gratuit et ultra-rapide.
+ * Corrige la réponse d'un élève à un exercice d'un document.
+ * Utilise Groq (Llama 3.3) pour fournir une correction pédagogique.
  */
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { aiExplainSchema } from "@/lib/validations";
-import { explainDocument, isAIConfigured } from "@/lib/ai";
+import { z } from "zod";
+import { correctAnswer, isAIConfigured } from "@/lib/ai";
+
+const correctSchema = z.object({
+    documentId: z.string().min(1, "ID du document requis"),
+    exerciseNumber: z.string().min(1, "Numéro d'exercice requis"),
+    studentAnswer: z.string().min(5, "Réponse trop courte (5 car. minimum)").max(5000),
+});
 
 export async function POST(req: Request) {
     try {
@@ -27,7 +33,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const validation = aiExplainSchema.safeParse(body);
+        const validation = correctSchema.safeParse(body);
 
         if (!validation.success) {
             return NextResponse.json(
@@ -36,7 +42,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const { documentId, question } = validation.data;
+        const { documentId, exerciseNumber, studentAnswer } = validation.data;
 
         const document = await prisma.document.findUnique({
             where: { id: documentId },
@@ -47,12 +53,12 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Document introuvable" }, { status: 404 });
         }
 
-        let explanation: string;
+        let correction: string;
         let isAI = false;
 
         if (isAIConfigured()) {
             try {
-                explanation = await explainDocument(
+                correction = await correctAnswer(
                     {
                         title: document.title,
                         year: document.year,
@@ -60,50 +66,52 @@ export async function POST(req: Request) {
                         level: document.level.name,
                         subject: document.subject.name,
                     },
-                    question
+                    exerciseNumber,
+                    studentAnswer
                 );
                 isAI = true;
             } catch (error) {
-                console.error("[AI_EXPLAIN_ERROR]", error);
-                explanation = generateFallback(document, question);
+                console.error("[AI_CORRECT_ERROR]", error);
+                correction = `## Correction de l'exercice ${exerciseNumber}
+
+Votre réponse a été reçue. L'IA est temporairement indisponible pour la corriger.
+
+### Votre réponse :
+${studentAnswer}
+
+### Conseil :
+Comparez votre réponse avec le corrigé officiel disponible dans la bibliothèque.
+
+---
+*💡 Réessayez dans quelques instants pour obtenir une correction IA détaillée.*`;
             }
         } else {
-            explanation = generateFallback(document, question);
+            correction = `## Correction de l'exercice ${exerciseNumber}
+
+### Votre réponse :
+${studentAnswer}
+
+### 📝 Analyse automatique
+L'analyse IA n'est pas encore configurée. Voici quelques points de vérification :
+
+1. **Structure** : Votre réponse est-elle bien structurée ?
+2. **Justification** : Avez-vous justifié chaque étape ?
+3. **Calculs** : Vos calculs sont-ils vérifiés ?
+4. **Unités** : Les unités sont-elles correctes ?
+
+---
+*💡 Configurez GROQ_API_KEY pour des corrections IA personnalisées.*`;
         }
 
         return NextResponse.json({
             documentId: document.id,
             documentTitle: document.title,
-            level: document.level.name,
-            subject: document.subject.name,
-            question: question || "Explication générale",
-            explanation,
+            exerciseNumber,
+            correction,
             isAI,
         });
     } catch (error) {
-        console.error("[AI_EXPLAIN]", error);
+        console.error("[AI_CORRECT]", error);
         return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
     }
-}
-
-function generateFallback(document: any, question?: string | null): string {
-    return `## Analyse de "${document.title}"
-
-### 📚 Informations
-- **Matière** : ${document.subject.name}
-- **Niveau** : ${document.level.name}
-- **Année** : ${document.year}
-- **Type** : ${document.type === "SUBJECT" ? "Sujet d'examen" : "Corrigé détaillé"}
-
-${question ? `### ❓ Votre question\n"${question}"\n\nCette question concerne un concept clé en ${document.subject.name}. Pour une explication IA détaillée, veuillez configurer la clé Groq.\n\n` : ""}
-
-### 🎯 Conseils de méthodologie
-1. Lisez attentivement l'énoncé avant de commencer.
-2. Identifiez les mots-clés de chaque question.
-3. Gérez votre temps proportionnellement aux points.
-4. Rédigez proprement et structurez vos réponses.
-5. Vérifiez vos calculs et relisez-vous.
-
----
-*💡 Configurez GROQ_API_KEY pour des explications IA détaillées avec Llama 3.3.*`;
 }

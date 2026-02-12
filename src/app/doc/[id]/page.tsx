@@ -13,7 +13,9 @@ import {
     ShieldCheck,
     CheckCircle2,
     ArrowRight,
-    Brain
+    Brain,
+    PenLine,
+    Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -143,8 +145,27 @@ export default async function DocumentDetailPage({
                                     <Brain className="h-5 w-5" />
                                     Expliquer avec l&apos;IA
                                 </Link>
+
+                                {/* Bouton Correction IA */}
+                                <Link
+                                    href={`/doc/${document.id}/explain?tab=correct`}
+                                    className="w-full h-14 rounded-2xl bg-orange-500 text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-orange-500/20"
+                                >
+                                    <PenLine className="h-5 w-5" />
+                                    Corriger avec l&apos;IA
+                                </Link>
+
+                                {/* Bouton Quiz IA */}
+                                <Link
+                                    href={`/doc/${document.id}/explain?tab=quiz`}
+                                    className="w-full h-14 rounded-2xl bg-purple-600 text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-purple-600/20"
+                                >
+                                    <Zap className="h-5 w-5" />
+                                    Quiz IA
+                                </Link>
+
                                 <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-black">
-                                    Premium — IA éducative
+                                    Premium — IA éducative Jàngatub
                                 </p>
                             </div>
 
