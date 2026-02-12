@@ -1,0 +1,115 @@
+warning: could not open directory 'Application Data/': Permission denied
+warning: could not open directory 'Cookies/': Permission denied
+warning: could not open directory 'Local Settings/': Permission denied
+warning: could not open directory 'Menu D├®marrer/': Permission denied
+warning: could not open directory 'Mes documents/': Permission denied
+warning: could not open directory 'Mod├¿les/': Permission denied
+warning: could not open directory 'Recent/': Permission denied
+warning: could not open directory 'SendTo/': Permission denied
+warning: could not open directory 'Voisinage d'impression/': Permission denied
+warning: could not open directory 'Voisinage r├®seau/': Permission denied
+?? ../.android/
+?? ../.antigravity/
+?? ../.bash_history
+?? ../.cache/
+?? ../.claude.json
+?? ../.claude/
+?? ../.codex/
+?? ../.copilot/
+?? ../.cursor/
+?? ../.dbclient/
+?? ../.dotnet/
+?? ../.expo/
+?? ../.gemini/
+?? ../.gitconfig
+?? ../.gitignore
+?? ../.gradle/
+?? ../.idlerc/
+?? ../.javacpp/
+?? ../.next-devtools-mcp/
+?? ../.node_repl_history
+?? ../.redhat/
+?? ../.rest-client/
+?? ../.skiko/
+?? ../.ssh/
+?? ../.vscode/
+?? ../2D.py
+?? "../2M Collection/"
+?? ../AndroidStudioProjects/
+?? ../AppData/
+?? "../Application FOTAL MA/"
+?? "../Base cadets/"
+?? "../Boutique poulets/"
+?? ../Boutique.html
+?? "../CV Portfolio/"
+?? ../CV/
+?? ../Contacts/
+?? "../Cr\303\251ation site gestion \303\251l\303\250ves cadets/"
+?? ../Desktop/
+?? ../Documents/
+?? ../Downloads/
+?? "../E-learning QUI DIT SOIR/"
+?? "../Elevate app/"
+?? ../Favorites/
+?? "../Guinar App/"
+?? "../Guinar Market/"
+?? ../IntelGraphicsProfiles/
+?? ../JaayNdougou/
+?? ./
+?? ../JotnaFay/
+?? ../Links/
+?? "../MaXi JeT/"
+?? ../MaxiPoulet.html
+?? ../Maxipoulet/
+?? ../Music/
+?? ../NTUSER.DAT
+?? ../NTUSER.DAT{84f940a9-e3da-11ef-884c-b88687af67e3}.TM.blf
+?? ../NTUSER.DAT{84f940a9-e3da-11ef-884c-b88687af67e3}.TMContainer00000000000000000001.regtrans-ms
+?? ../NTUSER.DAT{84f940a9-e3da-11ef-884c-b88687af67e3}.TMContainer00000000000000000002.regtrans-ms
+?? ../NTUSER.DAT{bfd82490-7c76-11f0-88e0-5c93a288e294}.TxR.0.regtrans-ms
+?? ../NTUSER.DAT{bfd82490-7c76-11f0-88e0-5c93a288e294}.TxR.1.regtrans-ms
+?? ../NTUSER.DAT{bfd82490-7c76-11f0-88e0-5c93a288e294}.TxR.2.regtrans-ms
+?? ../NTUSER.DAT{bfd82490-7c76-11f0-88e0-5c93a288e294}.TxR.blf
+?? ../NTUSER.DAT{bfd82491-7c76-11f0-88e0-5c93a288e294}.TM.blf
+?? ../NTUSER.DAT{bfd82491-7c76-11f0-88e0-5c93a288e294}.TMContainer00000000000000000001.regtrans-ms
+?? ../NTUSER.DAT{bfd82491-7c76-11f0-88e0-5c93a288e294}.TMContainer00000000000000000002.regtrans-ms
+?? "../Nouveau dossier (5)/"
+?? "../Nouveau dossier/"
+?? "../OneDrive - MSFT/"
+?? ../OneDrive/
+?? "../Plateforme de Gestion Scolaire Compl\303\250te.zip"
+?? "../Plateforme de Gestion Scolaire Compl\303\250te/"
+?? "../Saved Games/"
+?? ../Searches/
+?? ../Videos/
+?? "../boutique vert/"
+?? "../cadets .sn/"
+?? ../dmwm-education/
+?? ../edb_pgbouncer.exe
+?? ../edb_psqlodbc.exe
+?? ../edb_xdb_7.exe
+?? "../gestion resto/"
+?? "../import pygame.py"
+?? ../invoxa/
+?? ../jeux.py
+?? ../ntuser.dat.LOG1
+?? ../ntuser.dat.LOG2
+?? ../ntuser.ini
+?? ../package-lock.json
+?? ../package-lock.json.bak
+?? ../package.json
+?? ../pemhttpd.exe
+?? ../plateforme/
+?? "../portfolio 2k25/"
+?? ../portfolio.html
+?? ../postgis_3_6_pg18.exe
+?? ../postgresql_18.exe
+?? "../projet java/"
+?? "../python pygame.py"
+?? "../serpent pygame.py"
+?? "../site neww/"
+?? "../site web/"
+?? ../source/
+?? ../suite.html
+?? ../venv/
+?? "../whatsapp comerce manager/"
