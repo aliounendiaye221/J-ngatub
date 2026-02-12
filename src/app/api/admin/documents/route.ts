@@ -3,6 +3,15 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { documentSchema } from "@/lib/validations";
+import { revalidatePath } from "next/cache";
+
+/** Invalide le cache de toutes les pages qui affichent des documents */
+function revalidateDocumentPages() {
+    revalidatePath("/");
+    revalidatePath("/docs");
+    revalidatePath("/bac");
+    revalidatePath("/bfem");
+}
 
 /**
  * GET /api/admin/documents
@@ -82,6 +91,8 @@ export async function POST(req: Request) {
             include: { level: true, subject: true },
         });
 
+        revalidateDocumentPages();
+
         return NextResponse.json(document, { status: 201 });
     } catch (error) {
         console.error("[ADMIN_DOCUMENTS_POST]", error);
@@ -121,6 +132,8 @@ export async function PUT(req: Request) {
             include: { level: true, subject: true },
         });
 
+        revalidateDocumentPages();
+
         return NextResponse.json(document);
     } catch (error) {
         console.error("[ADMIN_DOCUMENTS_PUT]", error);
@@ -147,6 +160,8 @@ export async function DELETE(req: Request) {
         }
 
         await prisma.document.delete({ where: { id } });
+
+        revalidateDocumentPages();
 
         return NextResponse.json({ success: true });
     } catch (error) {

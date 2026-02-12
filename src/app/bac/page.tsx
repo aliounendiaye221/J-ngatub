@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { prisma } from '@/lib/prisma';
 import DocumentCard from '@/components/ui/DocumentCard';
 import { getServerSession } from "next-auth";
