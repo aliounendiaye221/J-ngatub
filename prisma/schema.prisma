@@ -153,9 +153,9 @@ model Favorite {
 model Subscription {
   id        String    @id @default(cuid())
   plan      String    // PREMIUM_MONTHLY, PREMIUM_ANNUAL, ADMIN_ACTIVATE
-  status    String    @default("ACTIVE") // ACTIVE, EXPIRED, CANCELLED
-  provider  String?   // WAVE, ORANGE_MONEY, STRIPE (null = admin)
-  txRef     String?   // Référence de transaction du fournisseur
+  status    String    @default("ACTIVE") // PENDING, ACTIVE, EXPIRED, CANCELLED
+  provider  String?   // WAVE, ORANGE_MONEY (null = admin)
+  txRef     String?   @unique // Référence de transaction / ID session Wave
   startAt   DateTime  @default(now())
   endAt     DateTime?
   createdAt DateTime  @default(now())

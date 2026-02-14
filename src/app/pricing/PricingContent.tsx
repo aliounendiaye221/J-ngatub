@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Crown, Zap, ShieldCheck, Sparkles, BookOpen, Brain, Award, BarChart3, Headphones } from "lucide-react";
+import { Check, Crown, Zap, ShieldCheck, Sparkles, BookOpen, Brain, Award, BarChart3, Headphones, Loader2, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -85,8 +85,8 @@ export default function PricingContent() {
     const reason = searchParams.get("reason");
 
     /**
-     * Gère la souscription premium.
-     * Appelle l'API d'activation et redirige en cas de succès.
+     * Gère la souscription premium via Wave Checkout.
+     * Crée une session de paiement Wave et redirige l'utilisateur.
      */
     const handleSubscribe = async (planId: string) => {
         if (!session) {
@@ -96,20 +96,22 @@ export default function PricingContent() {
 
         setLoading(planId);
         try {
-            const response = await fetch("/api/premium/activate", {
+            const response = await fetch("/api/wave/checkout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ plan: planId }),
             });
 
-            if (response.ok) {
-                router.push("/pricing/success");
+            const data = await response.json();
+
+            if (response.ok && data.checkoutUrl) {
+                // Rediriger vers Wave pour le paiement
+                window.location.href = data.checkoutUrl;
             } else {
-                const data = await response.json();
-                alert(data.error || "Erreur lors de l'activation");
+                alert(data.error || "Erreur lors de la création du paiement");
             }
         } catch (error) {
-            console.error("Subscription error:", error);
+            console.error("Wave checkout error:", error);
             alert("Erreur de connexion. Veuillez réessayer.");
         } finally {
             setLoading(null);
@@ -196,16 +198,29 @@ export default function PricingContent() {
                                 onClick={() => plan.premium && handleSubscribe(plan.id)}
                                 disabled={(!plan.premium && !!session?.user) || (session?.user?.isPremium && plan.premium) || loading === plan.id}
                                 className={cn(
-                                    "w-full h-14 rounded-2xl font-black transition-all text-sm uppercase tracking-widest active:scale-95 shadow-lg",
+                                    "w-full h-14 rounded-2xl font-black transition-all text-sm uppercase tracking-widest active:scale-95 shadow-lg flex items-center justify-center gap-3",
                                     plan.highlight
-                                        ? "bg-[#4F46E5] text-white hover:bg-[#4338CA] shadow-indigo-500/20"
+                                        ? "bg-[#1DC3D2] text-white hover:bg-[#18adb5] shadow-[#1DC3D2]/20"
                                         : plan.premium
                                             ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10"
                                             : "bg-slate-100 text-slate-500 cursor-default border border-slate-200"
                                 )}
                             >
-                                {loading === plan.id ? "Traitement..." :
-                                    (session?.user?.isPremium && plan.premium) ? "Abonnement Actif" : plan.cta}
+                                {loading === plan.id ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        Redirection vers Wave...
+                                    </>
+                                ) : (session?.user?.isPremium && plan.premium) ? (
+                                    "Abonnement Actif"
+                                ) : plan.premium ? (
+                                    <>
+                                        <Smartphone className="h-5 w-5" />
+                                        Payer avec Wave
+                                    </>
+                                ) : (
+                                    plan.cta
+                                )}
                             </button>
                         </div>
                     ))}
