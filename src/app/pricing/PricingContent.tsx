@@ -1,18 +1,15 @@
 "use client";
 
-import { Check, Crown, Zap, ShieldCheck, Sparkles, BookOpen, Brain, Award, BarChart3, Headphones, Loader2, Smartphone } from "lucide-react";
+import { Check, Crown, Zap, ShieldCheck, Sparkles, AlertCircle, BarChart3, Headphones, Loader2, Smartphone, Copy, X, Brain, Award } from "lucide-react";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 /**
  * Plans tarifaires disponibles sur Jàngatub.
- * 
- * - Gratuit : accès PDF sujets + corrigés (tous les documents)
- * - Premium Mensuel : quiz, dashboard, certificats, packs téléchargement, IA, support
- * - Premium Annuel : mêmes avantages + réduction
  */
 const plans = [
     {
@@ -65,9 +62,6 @@ const plans = [
     }
 ];
 
-/**
- * Fonctionnalités premium détaillées pour la section de confiance.
- */
 const premiumFeatures = [
     { icon: Brain, title: "Quiz Interactifs", desc: "Testez vos connaissances avec des quiz par matière et niveau." },
     { icon: BarChart3, title: "Suivi de Progression", desc: "Visualisez vos scores et identifiez vos points faibles." },
@@ -75,51 +69,112 @@ const premiumFeatures = [
     { icon: Headphones, title: "Support Prioritaire", desc: "Assistance rapide par email pour toutes vos questions." },
 ];
 
+
+
 export default function PricingContent() {
     const { data: session } = useSession();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [loading, setLoading] = useState<string | null>(null);
+    const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
 
     // Message si redirigé depuis une route premium
     const reason = searchParams.get("reason");
 
-    /**
-     * Gère la souscription premium via Wave Checkout.
-     * Crée une session de paiement Wave et redirige l'utilisateur.
-     */
-    const handleSubscribe = async (planId: string) => {
+    const handleSubscribe = (planId: string) => {
         if (!session) {
             signIn();
             return;
         }
-
-        setLoading(planId);
-        try {
-            const response = await fetch("/api/wave/checkout", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ plan: planId }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.checkoutUrl) {
-                // Rediriger vers Wave pour le paiement
-                window.location.href = data.checkoutUrl;
-            } else {
-                alert(data.error || "Erreur lors de la création du paiement");
-            }
-        } catch (error) {
-            console.error("Wave checkout error:", error);
-            alert("Erreur de connexion. Veuillez réessayer.");
-        } finally {
-            setLoading(null);
+        const plan = plans.find(p => p.id === planId);
+        if (plan) {
+            setSelectedPlan(plan);
         }
     };
 
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        alert("Numéro copié !");
+    };
+
+    const getWhatsAppLink = () => {
+        if (!selectedPlan || !session?.user?.email) return "#";
+        const message = `Bonjour, je souhaite activer mon abonnement ${selectedPlan.name} (${selectedPlan.price} FCFA). J'ai effectué le paiement au 70 583 91 55. Mon compte : ${session.user.email}`;
+        return `https://wa.me/221705839155?text=${encodeURIComponent(message)}`;
+    };
+
     return (
-        <div className="min-h-screen bg-slate-50/50 pb-24">
+        <div className="min-h-screen bg-slate-50/50 pb-24 relative">
+            {/* Modal de Paiement Manuel */}
+            <AnimatePresence>
+                {selectedPlan && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            onClick={() => setSelectedPlan(null)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden"
+                        >
+                            <div className="bg-[#1DC3D2] p-6 text-white text-center relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-10"><Smartphone className="h-32 w-32" /></div>
+                                <button
+                                    onClick={() => setSelectedPlan(null)}
+                                    className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                                <Smartphone className="h-12 w-12 mx-auto mb-3" />
+                                <h3 className="text-2xl font-black">Paiement Wave</h3>
+                                <p className="text-white/90 text-sm font-medium">Transfert direct sécurisé</p>
+                            </div>
+
+                            <div className="p-8 space-y-6">
+                                <div className="text-center space-y-2">
+                                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Montant à envoyer</p>
+                                    <p className="text-4xl font-black text-slate-900">{selectedPlan.price} <span className="text-lg text-slate-500">FCFA</span></p>
+                                </div>
+
+                                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center justify-between group cursor-pointer hover:border-primary/50 transition-colors"
+                                    onClick={() => copyToClipboard("705839155")}>
+                                    <div className="space-y-1">
+                                        <p className="text-xs font-bold text-muted-foreground uppercase">Numéro Wave Business</p>
+                                        <p className="text-xl font-black text-slate-900 tracking-wider">70 583 91 55</p>
+                                    </div>
+                                    <div className="p-3 bg-white rounded-xl shadow-sm group-hover:scale-110 transition-transform text-slate-500">
+                                        <Copy className="h-5 w-5" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex gap-3 text-sm text-slate-600 bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                        <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+                                        <p className="leading-relaxed">
+                                            L&apos;intégration automatique est temporairement indisponible. Veuillez effectuer le transfert puis confirmer sur WhatsApp pour activation immédiate.
+                                        </p>
+                                    </div>
+
+                                    <a
+                                        href={getWhatsAppLink()}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full h-14 rounded-2xl bg-[#25D366] text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#20bd5a] hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-green-500/20"
+                                    >
+                                        <Smartphone className="h-5 w-5" />
+                                        Confirmer le paiement
+                                    </a>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             {/* Bannière si redirigé depuis une route premium */}
             {reason === "premium_required" && (
                 <div className="bg-amber-50 border-b border-amber-200 px-6 py-4">
@@ -196,7 +251,7 @@ export default function PricingContent() {
 
                             <button
                                 onClick={() => plan.premium && handleSubscribe(plan.id)}
-                                disabled={(!plan.premium && !!session?.user) || (session?.user?.isPremium && plan.premium) || loading === plan.id}
+                                disabled={(!plan.premium && !!session?.user) || (session?.user?.isPremium && plan.premium)}
                                 className={cn(
                                     "w-full h-14 rounded-2xl font-black transition-all text-sm uppercase tracking-widest active:scale-95 shadow-lg flex items-center justify-center gap-3",
                                     plan.highlight
@@ -206,12 +261,7 @@ export default function PricingContent() {
                                             : "bg-slate-100 text-slate-500 cursor-default border border-slate-200"
                                 )}
                             >
-                                {loading === plan.id ? (
-                                    <>
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                        Redirection vers Wave...
-                                    </>
-                                ) : (session?.user?.isPremium && plan.premium) ? (
+                                {(session?.user?.isPremium && plan.premium) ? (
                                     "Abonnement Actif"
                                 ) : plan.premium ? (
                                     <>

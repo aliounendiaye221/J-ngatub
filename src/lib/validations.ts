@@ -66,6 +66,16 @@ export const aiExplainSchema = z.object({
     context: z.string().max(2000).optional(),
 });
 
+// ─── Assistant IA avancé ───────────────────────────────────────────────
+
+/** Validation pour l'assistant IA (transcription, formules, démarche, etc.) */
+export const aiAssistSchema = z.object({
+    documentId: z.string().min(1, "ID du document requis"),
+    action: z.enum(["transcribe", "explain_exercise", "formulas", "methodology", "full_assist"]),
+    exerciseText: z.string().max(5000, "Texte trop long (max 5000 caractères)").optional(),
+    exerciseNumber: z.string().max(100).optional(),
+});
+
 // ─── Téléchargement Pack ───────────────────────────────────────────────
 
 /** Validation pour le téléchargement d'un pack */
@@ -95,4 +105,5 @@ export type QuizSubmitInput = z.infer<typeof quizSubmitSchema>;
 export type QuizCreateInput = z.infer<typeof quizCreateSchema>;
 export type SupportTicketInput = z.infer<typeof supportTicketSchema>;
 export type AiExplainInput = z.infer<typeof aiExplainSchema>;
+export type AiAssistInput = z.infer<typeof aiAssistSchema>;
 export type DownloadPackInput = z.infer<typeof downloadPackSchema>;

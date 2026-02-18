@@ -11,7 +11,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
     ArrowLeft, Plus, Brain, Trash2, CheckCircle2,
-    Loader2, ChevronDown, ChevronUp, GraduationCap
+    Loader2, ChevronDown, ChevronUp, GraduationCap,
+    Sparkles, FileText, Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,15 @@ interface Quiz {
     subject: { name: string };
     _count?: { questions: number };
     createdAt: string;
+}
+
+interface DocumentItem {
+    id: string;
+    title: string;
+    year: number;
+    type: string;
+    level: { name: string };
+    subject: { name: string };
 }
 
 interface QuestionForm {
@@ -48,7 +58,15 @@ export default function AdminQuizPage() {
     const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [showAIForm, setShowAIForm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+
+    // Génération IA
+    const [documents, setDocuments] = useState<DocumentItem[]>([]);
+    const [selectedDocId, setSelectedDocId] = useState("");
+    const [aiQuestionCount, setAiQuestionCount] = useState(10);
+    const [aiGenerating, setAiGenerating] = useState(false);
+    const [aiResult, setAiResult] = useState<{ success: boolean; message: string; quizId?: string } | null>(null);
 
     // Formulaire de création
     const [title, setTitle] = useState("");
@@ -84,10 +102,50 @@ export default function AdminQuizPage() {
                 const data = await subjectsRes.json();
                 setSubjects(data);
             }
+
+            // Charger les documents pour la génération IA
+            const docsRes = await fetch("/api/admin/documents?limit=200");
+            if (docsRes.ok) {
+                const data = await docsRes.json();
+                setDocuments(data.documents || []);
+            }
         } catch (error) {
             console.error("Erreur:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    /** Générer un quiz automatiquement avec l'IA */
+    const handleAIGenerate = async () => {
+        if (!selectedDocId) return;
+        setAiGenerating(true);
+        setAiResult(null);
+
+        try {
+            const res = await fetch("/api/admin/quiz/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    documentId: selectedDocId,
+                    numberOfQuestions: aiQuestionCount,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setAiResult({ success: true, message: data.message, quizId: data.quiz?.id });
+                setSelectedDocId("");
+                await loadData();
+            } else {
+                setAiResult({ success: false, message: data.error || "Erreur lors de la génération" });
+            }
+        } catch (error) {
+            console.error("Erreur IA:", error);
+            setAiResult({ success: false, message: "Erreur réseau" });
+        } finally {
+            setAiGenerating(false);
         }
     };
 
@@ -189,18 +247,136 @@ export default function AdminQuizPage() {
                             </h1>
                             <p className="text-muted-foreground">{quizzes.length} quiz créés</p>
                         </div>
-                        <button
-                            onClick={() => setShowForm(!showForm)}
-                            className="h-14 px-8 rounded-2xl bg-primary text-white font-black text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
-                        >
-                            <Plus className="h-5 w-5" /> Nouveau Quiz
-                        </button>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setShowAIForm(!showAIForm); setShowForm(false); }}
+                                className="h-14 px-8 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl shadow-purple-500/20 hover:scale-105 active:scale-95 transition-all"
+                            >
+                                <Sparkles className="h-5 w-5" /> Générer avec l&apos;IA
+                            </button>
+                            <button
+                                onClick={() => { setShowForm(!showForm); setShowAIForm(false); }}
+                                className="h-14 px-8 rounded-2xl bg-primary text-white font-black text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+                            >
+                                <Plus className="h-5 w-5" /> Manuel
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div className="container mx-auto px-6 max-w-5xl space-y-12">
-                {/* Formulaire de création */}
+                {/* Formulaire de génération IA */}
+                {showAIForm && (
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-[2rem] border border-purple-200 p-8 space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
+                                <Sparkles className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black">Générer un quiz avec l&apos;IA</h2>
+                                <p className="text-sm text-muted-foreground">L&apos;IA crée un quiz complet à partir d&apos;un sujet d&apos;examen PDF</p>
+                            </div>
+                        </div>
+
+                        {/* Sélection du document */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold">Document source (sujet d&apos;examen)</label>
+                            <select
+                                value={selectedDocId}
+                                onChange={(e) => setSelectedDocId(e.target.value)}
+                                className="w-full h-12 px-4 rounded-xl border bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                            >
+                                <option value="">Sélectionner un document...</option>
+                                {documents.map((doc) => (
+                                    <option key={doc.id} value={doc.id}>
+                                        {doc.title} — {doc.subject.name} {doc.level.name} ({doc.year})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Nombre de questions */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold">Nombre de questions</label>
+                            <div className="flex gap-3">
+                                {[5, 10, 15, 20, 25, 30].map((n) => (
+                                    <button
+                                        key={n}
+                                        type="button"
+                                        onClick={() => setAiQuestionCount(n)}
+                                        className={cn(
+                                            "h-10 px-4 rounded-xl font-bold text-sm transition-all",
+                                            aiQuestionCount === n
+                                                ? "bg-purple-600 text-white shadow-lg"
+                                                : "bg-white border hover:border-purple-300"
+                                        )}
+                                    >
+                                        {n}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Résultat IA */}
+                        {aiResult && (
+                            <div className={cn(
+                                "p-4 rounded-xl text-sm font-medium",
+                                aiResult.success
+                                    ? "bg-green-50 text-green-800 border border-green-200"
+                                    : "bg-red-50 text-red-800 border border-red-200"
+                            )}>
+                                {aiResult.success ? (
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                        <span>{aiResult.message}</span>
+                                        {aiResult.quizId && (
+                                            <Link
+                                                href={`/quiz/${aiResult.quizId}`}
+                                                className="ml-auto px-3 py-1 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition-all"
+                                            >
+                                                Voir le quiz
+                                            </Link>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <span>{aiResult.message}</span>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex gap-4">
+                            <button
+                                type="button"
+                                onClick={() => setShowAIForm(false)}
+                                className="flex-1 h-12 rounded-xl border font-bold text-sm hover:bg-white transition-all"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleAIGenerate}
+                                disabled={aiGenerating || !selectedDocId}
+                                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-sm hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {aiGenerating ? (
+                                    <><Loader2 className="h-4 w-4 animate-spin" /> Génération en cours...</>
+                                ) : (
+                                    <><Zap className="h-4 w-4" /> Générer et publier le quiz</>
+                                )}
+                            </button>
+                        </div>
+
+                        {aiGenerating && (
+                            <div className="text-center text-sm text-muted-foreground animate-pulse">
+                                L&apos;IA analyse le sujet et génère les questions... Cela peut prendre 15-30 secondes.
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Formulaire de création manuelle */}
                 {showForm && (
                     <form onSubmit={handleSubmit} className="bg-white rounded-[2rem] border p-8 space-y-8">
                         <h2 className="text-xl font-black">Créer un quiz</h2>

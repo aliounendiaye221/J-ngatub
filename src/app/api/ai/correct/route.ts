@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { correctAnswer, isAIConfigured } from "@/lib/ai";
+import { extractTextFromPDF, truncateForAI } from "@/lib/pdf-extract";
 
 const correctSchema = z.object({
     documentId: z.string().min(1, "ID du document requis"),
@@ -53,6 +54,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Document introuvable" }, { status: 404 });
         }
 
+        // Extraire le texte du PDF pour que l'IA ait accès au sujet réel
+        let documentContent: string | null = null;
+        try {
+            const rawText = await extractTextFromPDF(document.pdfUrl);
+            if (rawText) {
+                documentContent = truncateForAI(rawText);
+            }
+        } catch (e) {
+            console.warn("[AI_CORRECT] Impossible d'extraire le texte du PDF:", e);
+        }
+
         let correction: string;
         let isAI = false;
 
@@ -67,7 +79,8 @@ export async function POST(req: Request) {
                         subject: document.subject.name,
                     },
                     exerciseNumber,
-                    studentAnswer
+                    studentAnswer,
+                    documentContent
                 );
                 isAI = true;
             } catch (error) {

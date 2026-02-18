@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { aiExplainSchema } from "@/lib/validations";
 import { explainDocument, isAIConfigured } from "@/lib/ai";
+import { extractTextFromPDF, truncateForAI } from "@/lib/pdf-extract";
 
 export async function POST(req: Request) {
     try {
@@ -47,6 +48,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Document introuvable" }, { status: 404 });
         }
 
+        // Extraire le texte du PDF pour le donner à l'IA
+        let documentContent: string | null = null;
+        try {
+            const rawText = await extractTextFromPDF(document.pdfUrl);
+            if (rawText) {
+                documentContent = truncateForAI(rawText);
+            }
+        } catch (e) {
+            console.warn("[AI_EXPLAIN] Impossible d'extraire le texte du PDF:", e);
+        }
+
         let explanation: string;
         let isAI = false;
 
@@ -60,7 +72,8 @@ export async function POST(req: Request) {
                         level: document.level.name,
                         subject: document.subject.name,
                     },
-                    question
+                    question,
+                    documentContent
                 );
                 isAI = true;
             } catch (error) {

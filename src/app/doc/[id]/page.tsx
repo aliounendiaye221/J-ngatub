@@ -1,23 +1,12 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-// Icônes utilisées dans la page de détail du document
+import SmartReader from '@/components/ui/SmartReader';
+import ActionRow from './ActionRow';
 import {
-    ArrowLeft,
-    Calendar,
-    FileText,
-    Share2,
-    Download,
-    MessageCircle,
-    Sparkles,
-    ShieldCheck,
-    CheckCircle2,
-    ArrowRight,
-    Brain,
-    PenLine,
-    Zap,
+    ArrowLeft, Calendar, Sparkles, ShieldCheck,
+    Brain, BookOpen, Clock, Zap
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export default async function DocumentDetailPage({
     params,
@@ -43,166 +32,159 @@ export default async function DocumentDetailPage({
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pb-24">
-            {/* Header Hero for Document */}
-            <div className="bg-white border-b relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 -skew-x-12 translate-x-1/2" />
-                <div className="container mx-auto px-6 py-12 relative z-10">
+        <div className="min-h-screen bg-[#F8FAFC] pb-24">
+            {/* 2026 Header with blurred backdrop */}
+            <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-white/20 px-6 py-4">
+                <div className="container mx-auto flex items-center justify-between">
                     <Link
                         href="/docs"
-                        className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors mb-8 group"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors"
                     >
-                        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                        Retour à la bibliothèque
+                        <ArrowLeft className="h-4 w-4" />
+                        <span className="hidden sm:inline">Retour</span>
                     </Link>
-
-                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-                        <div className="max-w-3xl space-y-4">
-                            <div className="flex items-center gap-3">
-                                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">
-                                    {document.level.name}
-                                </span>
-                                <span className="text-muted-foreground">•</span>
-                                <span className="text-sm font-bold text-muted-foreground">{document.subject.name}</span>
-                            </div>
-                            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
-                                {document.title}
-                            </h1>
-                            <div className="flex flex-wrap items-center gap-6 pt-2">
-                                <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                                    <Calendar className="h-4 w-4 text-primary" />
-                                    <span>Année Session : {document.year}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                                    <ShieldCheck className="h-4 w-4 text-primary" />
-                                    <span>Contenu Certifié Jàngatub</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3">
-                            <a
-                                href={shareOnWhatsApp()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="h-14 px-6 rounded-2xl bg-green-500 text-white font-bold flex items-center gap-3 shadow-lg shadow-green-500/20 hover:scale-105 active:scale-95 transition-all"
-                            >
-                                <MessageCircle className="h-5 w-5" />
-                                <span className="hidden md:inline">Partager</span>
-                            </a>
-                            <button className="h-14 w-14 rounded-2xl border bg-white flex items-center justify-center hover:bg-muted transition-all active:scale-95">
-                                <Share2 className="h-5 w-5" />
-                            </button>
-                        </div>
+                    <h1 className="text-sm font-black text-slate-900 truncate max-w-[200px] sm:max-w-md">
+                        {document.title}
+                    </h1>
+                    <div className="flex gap-2">
+                        <span className="px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest border border-indigo-100">
+                            {document.subject.name}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-6 mt-12">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    {/* Main Content: Document Viewer */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="glass-card rounded-[2.5rem] overflow-hidden bg-white shadow-2xl shadow-primary/5 min-h-[800px] flex flex-col items-center justify-center relative border-8 border-white">
-                            {/* Tous les PDF sont désormais en accès libre */}
-                                <>
-                                    <iframe
-                                        src={`${document.pdfUrl}#toolbar=0`}
-                                        className="h-full w-full absolute inset-0 border-0"
-                                        title={document.title}
-                                    />
-                                    <div className="absolute top-6 right-6 px-4 py-2 rounded-full bg-white/80 backdrop-blur-md border shadow-sm text-xs font-black uppercase tracking-widest">
-                                        Accès Gratuit
-                                    </div>
-                                </>
-                        </div>
-                    </div>
+            <div className="container mx-auto px-6 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                    {/* Sidebar: Details & Actions */}
-                    <div className="space-y-8">
-                        <div className="glass-card p-8 rounded-[2rem] space-y-8 border-white/50 bg-white/50 animate-in slide-in-from-right-4 duration-700">
-                            <div className="space-y-4">
-                                <h3 className="text-xl font-bold flex items-center gap-2">
-                                    <Sparkles className="h-5 w-5 text-primary" />
-                                    Actions Rapides
-                                </h3>
-                                <a
-                                    href={document.pdfUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    download
-                                    className="w-full h-14 rounded-2xl border-2 border-slate-200 text-slate-900 font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-50 transition-all active:scale-95 group"
-                                >
-                                    <Download className="h-5 w-5 group-hover:translate-y-0.5 transition-transform" />
-                                    Télécharger le PDF
-                                </a>
-                                <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-black">Disponible pour impression</p>
+                    {/* Main Content: Smart Reader (Takes 9 cols) */}
+                    <div className="lg:col-span-9 space-y-6">
+                        {/* Immersive Reader Component */}
+                        <SmartReader
+                            documentId={document.id}
+                            pdfUrl={document.pdfUrl}
+                            title={document.title}
+                            initialMode="classic" // Defaulting to classic since we don't have OCR yet, but UI is ready
+                        />
 
-                                {/* Bouton Explication IA — premium */}
-                                <Link
-                                    href={`/doc/${document.id}/explain`}
-                                    className="w-full h-14 rounded-2xl bg-primary text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20"
-                                >
-                                    <Brain className="h-5 w-5" />
-                                    Expliquer avec l&apos;IA
-                                </Link>
-
-                                {/* Bouton Correction IA */}
-                                <Link
-                                    href={`/doc/${document.id}/explain?tab=correct`}
-                                    className="w-full h-14 rounded-2xl bg-orange-500 text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-orange-500/20"
-                                >
-                                    <PenLine className="h-5 w-5" />
-                                    Corriger avec l&apos;IA
-                                </Link>
-
-                                {/* Bouton Quiz IA */}
-                                <Link
-                                    href={`/doc/${document.id}/explain?tab=quiz`}
-                                    className="w-full h-14 rounded-2xl bg-purple-600 text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-purple-600/20"
-                                >
-                                    <Zap className="h-5 w-5" />
-                                    Quiz IA
-                                </Link>
-
-                                <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-black">
-                                    Premium — IA éducative Jàngatub
-                                </p>
+                        {/* Document Meta (under reader) */}
+                        <div className="flex flex-wrap gap-6 p-6 rounded-3xl bg-white border shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+                                    <Calendar className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Session</p>
+                                    <p className="font-bold text-slate-900">{document.year}</p>
+                                </div>
                             </div>
-
-                            <div className="h-px bg-border" />
-
-                            <div className="space-y-4">
-                                <h3 className="font-bold text-slate-900">Conseils Jàngatub</h3>
-                                <div className="space-y-4">
-                                    {[
-                                        "Lisez attentivement l'énoncé en entier.",
-                                        "Répartissez votre temps par question.",
-                                        "Soignez la présentation de votre copie."
-                                    ].map((tip, i) => (
-                                        <div key={i} className="flex gap-3 text-sm text-muted-foreground items-start">
-                                            <div className="mt-1">
-                                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                            </div>
-                                            <p className="font-medium leading-relaxed">{tip}</p>
-                                        </div>
-                                    ))}
+                            <div className="h-10 w-px bg-slate-100" />
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-green-50 text-green-600">
+                                    <ShieldCheck className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Statut</p>
+                                    <p className="font-bold text-slate-900">Vérifié</p>
+                                </div>
+                            </div>
+                            <div className="h-10 w-px bg-slate-100" />
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-purple-50 text-purple-600">
+                                    <BookOpen className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Matière</p>
+                                    <p className="font-bold text-slate-900">{document.subject.name}</p>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Series/Level Card */}
-                        <div className="premium-gradient-bg p-8 rounded-[2rem] text-white space-y-4 animate-in slide-in-from-right-8 duration-700">
-                            <h4 className="text-lg font-bold">Preparation {document.level.name}</h4>
-                            <p className="text-white/80 text-sm leading-relaxed">
-                                Découvrez notre pack complet de révision pour le {document.level.name} incluant toutes les matières de spécialité.
-                            </p>
-                            <Link
-                                href="/docs"
-                                className="inline-flex items-center gap-2 font-bold text-white hover:underline underline-offset-4"
-                            >
-                                Voir les autres épreuves
-                                <ArrowRight className="h-4 w-4" />
-                            </Link>
+                    {/* Sidebar: Smart Tools (Takes 3 cols) */}
+                    <div className="lg:col-span-3 space-y-6">
+                        {/* AI Assistant Card */}
+                        <div className="rounded-[2.5rem] bg-gradient-to-br from-indigo-600 to-violet-600 p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 opacity-20"><Sparkles className="h-24 w-24" /></div>
+                            <div className="relative z-10 space-y-6">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl">
+                                        <Brain className="h-5 w-5 text-white" />
+                                    </div>
+                                    <span className="font-black text-sm tracking-wide">Janga AI</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold mb-2">Besoin d&apos;aide ?</h3>
+                                    <p className="text-indigo-100 text-sm leading-relaxed">
+                                        Notre IA peut vous expliquer les parties difficiles de ce sujet ou générer une correction détaillée.
+                                    </p>
+                                </div>
+                                <Link
+                                    href={`/doc/${document.id}/explain?tab=assist`}
+                                    className="block w-full py-4 rounded-xl bg-white text-indigo-600 font-bold text-sm text-center shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+                                >
+                                    Lancer l&apos;assistant
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Quiz IA Card */}
+                        <div className="rounded-[2.5rem] bg-gradient-to-br from-purple-600 to-pink-600 p-6 text-white shadow-xl shadow-purple-500/20 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 opacity-20"><Zap className="h-24 w-24" /></div>
+                            <div className="relative z-10 space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl">
+                                        <Zap className="h-5 w-5 text-white" />
+                                    </div>
+                                    <span className="font-black text-sm tracking-wide">Quiz IA</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold mb-1">Testez vos connaissances</h3>
+                                    <p className="text-purple-100 text-sm leading-relaxed">
+                                        L&apos;IA génère un quiz directement à partir du contenu de ce sujet.
+                                    </p>
+                                </div>
+                                <Link
+                                    href={`/doc/${document.id}/explain?tab=quiz`}
+                                    className="block w-full py-3.5 rounded-xl bg-white text-purple-600 font-bold text-sm text-center shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+                                >
+                                    Générer un Quiz
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Action List */}
+                        <div className="bg-white rounded-[2rem] border shadow-sm p-2">
+                            <ActionRow
+                                iconName="Download"
+                                label="Télécharger PDF"
+                                href={document.pdfUrl}
+                                external
+                            />
+                            <ActionRow
+                                iconName="Share2"
+                                label="Partager"
+                                color="text-blue-500"
+                                bg="bg-blue-50"
+                            />
+                            <ActionRow
+                                iconName="AlertTriangle"
+                                label="Signaler une erreur"
+                                color="text-red-500"
+                                bg="bg-red-50"
+                            />
+                        </div>
+
+                        {/* Timer / Practice Mode */}
+                        <div className="bg-white rounded-[2rem] border shadow-sm p-6 space-y-4">
+                            <div className="flex items-center gap-2 font-black text-slate-900">
+                                <Clock className="h-5 w-5 text-orange-500" />
+                                Mode Entraînement
+                            </div>
+                            <p className="text-xs text-muted-foreground">Chronométrez-vous pour simuler les conditions d&apos;examen.</p>
+                            <button className="w-full py-3 rounded-xl border-2 border-slate-100 font-bold text-sm hover:border-orange-500 hover:text-orange-500 transition-all">
+                                Démarrer (2h)
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -210,3 +192,5 @@ export default async function DocumentDetailPage({
         </div>
     );
 }
+
+

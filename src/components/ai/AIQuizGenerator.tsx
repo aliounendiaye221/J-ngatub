@@ -95,7 +95,7 @@ export default function AIQuizGenerator({ documentId }: AIQuizGeneratorProps) {
                     </div>
                     <h3 className="font-black text-xl">Quiz IA</h3>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                        L&apos;IA génère un quiz personnalisé basé sur les thèmes de ce document pour tester vos connaissances.
+                        L&apos;IA génère un quiz personnalisé à partir du <strong>contenu réel</strong> de ce sujet d&apos;examen pour tester vos connaissances.
                     </p>
                 </div>
 
@@ -109,7 +109,7 @@ export default function AIQuizGenerator({ documentId }: AIQuizGeneratorProps) {
                         className="h-10 px-3 rounded-xl border text-sm font-bold bg-white"
                         disabled={loading}
                     >
-                        {[3, 5, 7, 10].map((n) => (
+                        {[3, 5, 7, 10, 15].map((n) => (
                             <option key={n} value={n}>
                                 {n} questions
                             </option>

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 // Icônes utilisées dans la carte document
-import { Calendar, FileText, Eye, Download, Star } from 'lucide-react';
+import { Calendar, FileText, Eye, Download, Star, Zap } from 'lucide-react';
 import FavoriteButton from '@/components/favorites/FavoriteButton';
 import { cn } from '@/lib/utils';
 
@@ -86,13 +86,22 @@ export default function DocumentCard({ document, isFavorited = false }: Document
             {/* Actions / Footer */}
             <div className="mt-auto p-5 pt-0 border-t border-slate-100 bg-slate-50/50">
                 <div className="flex items-center gap-2 mt-5">
-                    {/* Bouton unique : tous les documents sont en accès libre */}
+                    {/* Bouton consulter */}
                     <Link
                         href={`/doc/${document.id}`}
                         className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#4F46E5] text-white py-4 font-black text-sm shadow-xl shadow-indigo-500/20 hover:bg-[#4338CA] hover:scale-[1.02] active:scale-95 transition-all"
                     >
                         <Eye className="h-4 w-4" />
                         Consulter
+                    </Link>
+                    {/* Bouton Quiz IA */}
+                    <Link
+                        href={`/doc/${document.id}/explain?tab=quiz`}
+                        className="flex items-center justify-center gap-1.5 rounded-xl bg-purple-600 text-white py-4 px-4 font-black text-sm shadow-xl shadow-purple-500/20 hover:bg-purple-700 hover:scale-[1.02] active:scale-95 transition-all"
+                        title="Générer un quiz IA à partir de ce sujet"
+                    >
+                        <Zap className="h-4 w-4" />
+                        Quiz
                     </Link>
                 </div>
             </div>

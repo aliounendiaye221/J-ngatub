@@ -204,3 +204,92 @@
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+/* 2026 Modern Animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes tilt {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(1deg);
+  }
+
+  75% {
+    transform: rotate(-1deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-tilt {
+  animation: tilt 10s ease-in-out infinite;
+}
+
+.glass-dark {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.gradient-border {
+  position: relative;
+  background: padding-box linear-gradient(#fff, #fff), border-box linear-gradient(to right, #4F46E5, #EC4899);
+  border: 2px solid transparent;
+  border-radius: 1.5rem;
+}
+
+/* Text Shimmer Effect */
+.shimmer-text {
+  background: linear-gradient(to right,
+      hsl(var(--primary)) 20%,
+      #fff 40%,
+      hsl(var(--primary)) 60%);
+  background-size: 200% auto;
+  color: #000;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}

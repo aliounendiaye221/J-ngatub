@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import AICorrection from "@/components/ai/AICorrection";
 import AIQuizGenerator from "@/components/ai/AIQuizGenerator";
+import AIAssistant from "@/components/ai/AIAssistant";
 
 interface ExplanationResult {
     documentTitle: string;
@@ -29,7 +30,7 @@ interface ExplanationResult {
     isAI: boolean;
 }
 
-type Tab = "explain" | "correct" | "quiz";
+type Tab = "explain" | "correct" | "quiz" | "assist";
 
 export default function ExplainPage() {
     const params = useParams();
@@ -38,7 +39,7 @@ export default function ExplainPage() {
 
     const tabParam = searchParams.get("tab");
     const [activeTab, setActiveTab] = useState<Tab>(
-        tabParam === "correct" ? "correct" : tabParam === "quiz" ? "quiz" : "explain"
+        tabParam === "correct" ? "correct" : tabParam === "quiz" ? "quiz" : tabParam === "assist" ? "assist" : "explain"
     );
     const [question, setQuestion] = useState("");
     const [loading, setLoading] = useState(false);
@@ -96,6 +97,7 @@ export default function ExplainPage() {
     };
 
     const tabs = [
+        { id: "assist" as Tab, label: "Assistant", icon: Sparkles, color: "text-violet-600 bg-violet-100" },
         { id: "explain" as Tab, label: "Expliquer", icon: Brain, color: "text-blue-600 bg-blue-100" },
         { id: "correct" as Tab, label: "Corriger", icon: PenLine, color: "text-orange-600 bg-orange-100" },
         { id: "quiz" as Tab, label: "Quiz IA", icon: Zap, color: "text-purple-600 bg-purple-100" },
@@ -270,6 +272,13 @@ export default function ExplainPage() {
                 {activeTab === "quiz" && (
                     <div className="max-w-2xl mx-auto">
                         <AIQuizGenerator documentId={documentId} />
+                    </div>
+                )}
+
+                {/* ─── Onglet Assistant IA ─── */}
+                {activeTab === "assist" && (
+                    <div className="max-w-3xl mx-auto">
+                        <AIAssistant documentId={documentId} />
                     </div>
                 )}
             </div>

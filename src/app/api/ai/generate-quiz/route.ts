@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { generateQuiz, isAIConfigured } from "@/lib/ai";
+import { extractTextFromPDF, truncateForAI } from "@/lib/pdf-extract";
 
 const generateQuizSchema = z.object({
     documentId: z.string().min(1, "ID du document requis"),
@@ -24,12 +25,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
-        if (!session.user.isPremium && session.user.role !== "ADMIN") {
-            return NextResponse.json(
-                { error: "Fonctionnalité réservée aux membres Premium" },
-                { status: 403 }
-            );
-        }
+        // Quiz IA est accessible à tous les utilisateurs connectés
 
         const body = await req.json();
         const validation = generateQuizSchema.safeParse(body);
@@ -59,6 +55,17 @@ export async function POST(req: Request) {
             );
         }
 
+        // Extraire le texte du PDF pour générer un quiz basé sur le vrai contenu
+        let documentContent: string | null = null;
+        try {
+            const rawText = await extractTextFromPDF(document.pdfUrl);
+            if (rawText) {
+                documentContent = truncateForAI(rawText, 10000);
+            }
+        } catch (e) {
+            console.warn("[AI_QUIZ] Impossible d'extraire le texte du PDF:", e);
+        }
+
         try {
             const quiz = await generateQuiz(
                 {
@@ -68,7 +75,8 @@ export async function POST(req: Request) {
                     level: document.level.name,
                     subject: document.subject.name,
                 },
-                numberOfQuestions
+                numberOfQuestions,
+                documentContent
             );
 
             return NextResponse.json({
